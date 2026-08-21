@@ -50,9 +50,3 @@
 
 ```bash
 sh -c "$(wget -qO- https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/uninstall.sh)"
-
----
-
-## 🛠️ Сборка
-
-Пакеты `.apk` собираются автоматически при создании нового тега релиза (`v*`) через GitHub Actions. Компиляция Go-бинарников выполняется без CGO (`CGO_ENABLED=0`) для архитектур `arm64`, `mipsle` и `amd64`.
