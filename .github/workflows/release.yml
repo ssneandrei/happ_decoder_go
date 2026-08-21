@@ -29,18 +29,38 @@ jobs:
           GOOS=linux GOARCH=mipsle CGO_ENABLED=0 go build -ldflags="-s -w" -o happ-decoder_mips main.go
           GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o happ-decoder_x86_64 main.go
 
-      - name: Build APK Packages v3 via OpenWrt SDK
-        uses: openwrt/gh-action-sdk@v1
-        with:
-          target: x86/64
-          ver: openwrt-25.12
+      - name: Install Alpine APK tools (v3)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apk-tools
+
+      - name: Package APK v3
+        run: |
+          mkdir -p pkg_root/usr/bin
+          mkdir -p pkg_root/etc/config
+          mkdir -p pkg_root/etc/init.d
+          mkdir -p pkg_root/usr/share/luci/menu.d
+          mkdir -p pkg_root/usr/share/rpcd/acl.d
+          mkdir -p pkg_root/www/luci-static/resources/view/happ-decoder
+
+          cp root/etc/config/happ-decoder pkg_root/etc/config/
+          cp root/etc/init.d/happ-decoder pkg_root/etc/init.d/
+          cp root/usr/share/luci/menu.d/*.json pkg_root/usr/share/luci/menu.d/
+          cp root/usr/share/rpcd/acl.d/*.json pkg_root/usr/share/rpcd/acl.d/
+          cp htdocs/luci-static/resources/view/happ-decoder/*.js pkg_root/www/luci-static/resources/view/happ-decoder/
+
+          mkdir -p output
+          
+          # Сборка пакета для aarch64
+          cp happ-decoder_aarch64 pkg_root/usr/bin/happ-decoder
+          chmod +x pkg_root/usr/bin/happ-decoder pkg_root/etc/init.d/happ-decoder
+          tar -C pkg_root -czf output/luci-app-happ-decoder_1.0.8_aarch64.apk .
 
       - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v1
         with:
           files: |
             happ-decoder_*
-            bin/packages/*/*/*.apk
+            output/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
