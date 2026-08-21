@@ -1,45 +1,58 @@
 name: Build and Release APK Package
-
 on:
-  push:
-    tags:
-      - 'v*'
-
+push:
+tags:
+- 'v*'
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.22'
-
-      - name: Download Go modules
-        run: |
-          go mod download
-          go get golang.org/x/crypto/chacha20poly1305
-          go mod tidy
-
-      - name: Build Go binary
-        run: |
-          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o happ-decoder main.go
-
-      - name: Build APK v3 Package in OpenWrt Docker
-        run: |
-          docker run --rm -v ${{ github.workspace }}:/builder/package/happ-decoder \
-            openwrt/sdk:aarch64_cortex-a53-openwrt-25.12 \
-            make package/happ-decoder/compile V=s
-
-      - name: Create Release and Upload Assets
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            happ-decoder
-            bin/packages/aarch64_cortex-a53/base/*.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
+build:
+runs-on: ubuntu-latest
+steps:
+- name: Checkout code
+uses: actions/checkout@v4
+- name: Set up Go
+uses: actions/setup-go@v5
+with:
+go-version: '1.22'
+- name: Download Go modules
+run: |
+go mod download
+go get golang.org/x/crypto/chacha20poly1305
+go mod tidy
+- name: Build Go binary
+run: |
+GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o happ-decoder main.go
+- name: Create Native OpenWrt APK v3 Package
+run: |
+mkdir -p pkg_build/usr/bin
+mkdir -p pkg_build/etc/config
+mkdir -p pkg_build/etc/init.d
+mkdir -p pkg_build/usr/share/luci/menu.d
+mkdir -p pkg_build/usr/share/rpcd/acl.d
+mkdir -p pkg_build/www/luci-static/resources/view/happ-decoder
+cp happ-decoder pkg_build/usr/bin/happ-decoder
+cp root/etc/config/happ-decoder pkg_build/etc/config/
+cp root/etc/init.d/happ-decoder pkg_build/etc/init.d/
+cp root/usr/share/luci/menu.d/.json pkg_build/usr/share/luci/menu.d/
+cp root/usr/share/rpcd/acl.d/.json pkg_build/usr/share/rpcd/acl.d/
+cp htdocs/luci-static/resources/view/happ-decoder/*.js pkg_build/www/luci-static/resources/view/happ-decoder/
+chmod +x pkg_build/usr/bin/happ-decoder
+chmod +x pkg_build/etc/init.d/happ-decoder
+cat << 'EOF' > pkg_build/.PKGINFO
+pkgname = luci-app-happ-decoder
+pkgver = 1.0.0-r1
+pkgdesc = LuCI support for Happ Decoder
+url = https://github.com/ssneandrei/happ_decoder_go
+arch = aarch64
+size = 5000000
+depend = ca-bundle
+EOF
+mkdir -p output
+tar -C pkg_build --owner=0 --group=0 -czf output/luci-app-happ-decoder_1.0.0_aarch64.apk .PKGINFO usr etc www
+- name: Create Release and Upload Assets
+uses: softprops/action-gh-release@v1
+with:
+files: |
+happ-decoder
+output/*.apk
+env:
+GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
