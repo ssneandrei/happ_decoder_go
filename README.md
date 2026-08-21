@@ -23,4 +23,5 @@
 Для автоматической установки пакета выполните команду в SSH-консоли вашего роутера:
 
 ```bash
-sh -c "$(wget -qO- [https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/install.sh](https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/install.sh))"
+sh -c "$(wget -qO- https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/install.sh)"
+
