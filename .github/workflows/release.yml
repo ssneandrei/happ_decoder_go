@@ -35,7 +35,7 @@ jobs:
           mkdir -p dist
           VERSION="${GITHUB_REF_NAME#v}"
 
-          build_apk() {
+          create_pkg() {
             ARCH=$1
             BIN_NAME=$2
             PKG_DIR="pkg_${ARCH}"
@@ -47,7 +47,6 @@ jobs:
             mkdir -p ${PKG_DIR}/usr/share/rpcd/acl.d
             mkdir -p ${PKG_DIR}/www/luci-static/resources/view/happ-decoder
 
-            # Копируем бинарник и структуры LuCI
             cp bin/${BIN_NAME} ${PKG_DIR}/usr/bin/happ-decoder
             chmod +x ${PKG_DIR}/usr/bin/happ-decoder
 
@@ -59,26 +58,20 @@ jobs:
             cp root/usr/share/rpcd/acl.d/luci-app-happ-decoder.json ${PKG_DIR}/usr/share/rpcd/acl.d/
             cp htdocs/luci-static/resources/view/happ-decoder/overview.js ${PKG_DIR}/www/luci-static/resources/view/happ-decoder/
 
-            # Метаданные .PKGINFO для OpenWrt 25 (apk)
-            cat <<EOF > ${PKG_DIR}/.PKGINFO
-  pkgname = luci-app-happ-decoder
-  pkgver = ${VERSION}
-  pkgdesc = LuCI support and binary for Happ Decoder
-  url = https://github.com/ssneandrel/happ_decoder_go
-  builddate = $(date +%s)
-  packager = GitHub Actions
-  size = $(du -sb ${PKG_DIR} | awk '{print $1}')
-  arch = ${ARCH}
-  depend = 
-  EOF
+            printf "pkgname = luci-app-happ-decoder\n" > ${PKG_DIR}/.PKGINFO
+            printf "pkgver = %s\n" "$VERSION" >> ${PKG_DIR}/.PKGINFO
+            printf "pkgdesc = LuCI support and binary for Happ Decoder\n" >> ${PKG_DIR}/.PKGINFO
+            printf "url = https://github.com/ssneandrel/happ_decoder_go\n" >> ${PKG_DIR}/.PKGINFO
+            printf "builddate = %s\n" "$(date +%s)" >> ${PKG_DIR}/.PKGINFO
+            printf "packager = GitHub Actions\n" >> ${PKG_DIR}/.PKGINFO
+            printf "arch = %s\n" "$ARCH" >> ${PKG_DIR}/.PKGINFO
 
-            # Упаковка в .apk (tar.gz)
             tar -czf dist/luci-app-happ-decoder_${VERSION}_${ARCH}.apk -C ${PKG_DIR} .
           }
 
-          build_apk "aarch64" "happ-decoder-arm64"
-          build_apk "mips" "happ-decoder-mipsle"
-          build_apk "x86_64" "happ-decoder-amd64"
+          create_pkg "aarch64" "happ-decoder-arm64"
+          create_pkg "mips" "happ-decoder-mipsle"
+          create_pkg "x86_64" "happ-decoder-amd64"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
