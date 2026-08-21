@@ -26,7 +26,7 @@ jobs:
           cp htdocs/luci-static/resources/view/happ-decoder/.js pkg/www/luci-static/resources/view/happ-decoder/ 2>/dev/null || true
           chmod +x pkg/usr/bin/happ-decoder pkg/etc/init.d/ 2>/dev/null || true
           printf "pkgname = luci-app-happ-decoder\npkgver = 1.0.0-r1\npkgdesc = LuCI support for Happ Decoder\nurl = https://github.com/ssneandrei/happ_decoder_go\narch = aarch64\nsize = 5000000\ndepend = ca-bundle\n" > pkg/.PKGINFO
-          tar -C pkg --owner=0 --group=0 -czf output/luci-app-happ-decoder_1.0.0_aarch64.apk .PKGINFO usr etc www
+          tar -C pkg --owner=0 --group=0 -cJf output/luci-app-happ-decoder_1.0.0_aarch64.apk .PKGINFO usr etc www
       - uses: softprops/action-gh-release@v1
         with:
           files: |
