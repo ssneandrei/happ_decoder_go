@@ -2,7 +2,7 @@
 
 Микросервис и веб-интерфейс LuCI для локальной расшифровки VPN-подписок формата **happ://** (поддерживаются форматы **crypt** — **crypt5**) на роутерах под управлением **OpenWrt 25** (с пакетным менеджером **apk**).
 
-Приложение полностью локально расшифровывает конфигурации (VLESS, VMess, Shadowsocks, Trojan) и отдаёт их в виде чистого списка для использования в **Forkop**, **Podkop**, **PassWall**, **OpenClash**.
+Приложение полностью локально расшифровывает конфигурации (VLESS, VMess, Shadowsocks, Trojan) и отдаёт их в виде чистого списка для использования в **ForkOP**, **Podkop**, **PassWall**, **OpenClash** и **Nikki**.
 
 ---
 
@@ -13,7 +13,7 @@
 * **Автоопределение архитектуры:** Скрипт установки сам выбирает нужную архитектуру (`aarch64`, `mips`, `x86_64`).
 * **Интерактивный LuCI UI:**
   * Управление фоновой службой и смена порта (по умолчанию `8080`).
-  * Генерация прямых ссылок подписки для Forkop/PassWall.
+  * Генерация прямых ссылок подписки для ForkOP/PassWall.
   * Встроенный декодер: просмотр всех зашифрованных локаций поштучно с кнопками быстрого копирования каждой ссылки.
 
 ---
@@ -22,9 +22,10 @@
 
 Для автоматической установки пакета выполните команду в SSH-консоли вашего роутера:
 
-sh -c "$(wget -qO- [https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/install.sh](https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/install.sh))"
+`sh -c "$(wget -qO- https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/install.sh)"`
 
 Скрипт автоматически определит архитектуру устройства, скачает актуальный `.apk` из последнего релиза GitHub и установит приложение в систему.
+
 
 ---
 
@@ -33,7 +34,7 @@ sh -c "$(wget -qO- [https://raw.githubusercontent.com/ssneandrel/happ_decoder_go
 1. Откройте веб-интерфейс OpenWrt и перейдите в раздел: **Службы** -> **Happ Decoder**.
 2. Включите службу и нажмите **Сохранить и применить**.
 
-### Использование в Forkop / Podkop / PassWall
+### Использование в ForkOP / Podkop / PassWall
 
 Вставьте исходную ссылку **happ://** в поле декодера в LuCI, чтобы сгенерировать подписку, либо сформируйте адрес вручную:
 
@@ -47,12 +48,10 @@ sh -c "$(wget -qO- [https://raw.githubusercontent.com/ssneandrel/happ_decoder_go
 
 Чтобы полностью удалить `luci-app-happ-decoder`, остановить службу и очистить все конфигурационные файлы с роутера, выполните команду в SSH:
 
-sh -c "$(wget -qO- [https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/uninstall.sh](https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/uninstall.sh))"
+`sh -c "$(wget -qO- https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/uninstall.sh)"`
 
 ---
 
 ## 🛠️ Сборка
 
 Пакеты `.apk` собираются автоматически при создании нового тега релиза (`v*`) через GitHub Actions. Компиляция Go-бинарников выполняется без CGO (`CGO_ENABLED=0`) для архитектур `arm64`, `mipsle` и `amd64`.
-
-
