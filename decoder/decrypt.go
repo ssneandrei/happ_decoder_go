@@ -1,7 +1,6 @@
 package decoder
 
 import (
-	"crypto/cipher"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -15,10 +14,9 @@ import (
 
 // RSA Private Key, используемый в Happ
 var happPrivateKeyPEM = []byte(`-----BEGIN RSA PRIVATE KEY-----
-MIIEowIBAAKCAQEA0Z3V... (здесь используется RSA ключ Happ) ...
+MIIEowIBAAKCAQEA0Z3V... (здесь ваш RSA ключ) ...
 -----END RSA PRIVATE KEY-----`)
 
-// DecryptHappURL расшифровывает ссылку формата happ://crypt*
 func DecryptHappURL(happURL string) (string, error) {
 	if !strings.HasPrefix(happURL, "happ://") {
 		return "", errors.New("неверный формат: ссылка должна начинаться с happ://")
@@ -85,7 +83,6 @@ func decryptCrypt5(data []byte) (string, error) {
 		return "", err
 	}
 
-	// Расшифровываем 32-байтный сессионный ключ ChaCha20 через RSA
 	chachaKey, err := rsa.DecryptPKCS1v15(rand.Reader, privKey, rsaBlock)
 	if err != nil {
 		return "", errors.New("ошибка расшифровки ключа crypt5: " + err.Error())
