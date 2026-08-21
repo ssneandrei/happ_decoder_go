@@ -1,4 +1,4 @@
-name: Build and Release Binaries
+name: Build and Release APK Packages
 
 on:
   push:
@@ -23,16 +23,66 @@ jobs:
       - name: Install dependencies
         run: go mod tidy
 
-      - name: Build Binaries for OpenWrt
+      - name: Build Go Binaries
+        run: |
+          mkdir -p bin
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o bin/happ-decoder-arm64 main.go
+          CGO_ENABLED=0 GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o bin/happ-decoder-mipsle main.go
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin/happ-decoder-amd64 main.go
+
+      - name: Package APKs for OpenWrt 25
         run: |
           mkdir -p dist
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o dist/happ-decoder-linux-arm64 main.go
-          CGO_ENABLED=0 GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o dist/happ-decoder-linux-mipsle main.go
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o dist/happ-decoder-linux-amd64 main.go
+          VERSION="${GITHUB_REF_NAME#v}"
+
+          build_apk() {
+            ARCH=$1
+            BIN_NAME=$2
+            PKG_DIR="pkg_${ARCH}"
+
+            mkdir -p ${PKG_DIR}/usr/bin
+            mkdir -p ${PKG_DIR}/etc/config
+            mkdir -p ${PKG_DIR}/etc/init.d
+            mkdir -p ${PKG_DIR}/usr/share/luci/menu.d
+            mkdir -p ${PKG_DIR}/usr/share/rpcd/acl.d
+            mkdir -p ${PKG_DIR}/www/luci-static/resources/view/happ-decoder
+
+            # Копируем бинарник и структуры LuCI
+            cp bin/${BIN_NAME} ${PKG_DIR}/usr/bin/happ-decoder
+            chmod +x ${PKG_DIR}/usr/bin/happ-decoder
+
+            cp root/etc/config/happ-decoder ${PKG_DIR}/etc/config/
+            cp root/etc/init.d/happ-decoder ${PKG_DIR}/etc/init.d/
+            chmod +x ${PKG_DIR}/etc/init.d/happ-decoder
+
+            cp root/usr/share/luci/menu.d/luci-app-happ-decoder.json ${PKG_DIR}/usr/share/luci/menu.d/
+            cp root/usr/share/rpcd/acl.d/luci-app-happ-decoder.json ${PKG_DIR}/usr/share/rpcd/acl.d/
+            cp htdocs/luci-static/resources/view/happ-decoder/overview.js ${PKG_DIR}/www/luci-static/resources/view/happ-decoder/
+
+            # Метаданные .PKGINFO для OpenWrt 25 (apk)
+            cat <<EOF > ${PKG_DIR}/.PKGINFO
+  pkgname = luci-app-happ-decoder
+  pkgver = ${VERSION}
+  pkgdesc = LuCI support and binary for Happ Decoder
+  url = https://github.com/ssneandrel/happ_decoder_go
+  builddate = $(date +%s)
+  packager = GitHub Actions
+  size = $(du -sb ${PKG_DIR} | awk '{print $1}')
+  arch = ${ARCH}
+  depend = 
+  EOF
+
+            # Упаковка в .apk (tar.gz)
+            tar -czf dist/luci-app-happ-decoder_${VERSION}_${ARCH}.apk -C ${PKG_DIR} .
+          }
+
+          build_apk "aarch64" "happ-decoder-arm64"
+          build_apk "mips" "happ-decoder-mipsle"
+          build_apk "x86_64" "happ-decoder-amd64"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/*
+          files: dist/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
