@@ -22,10 +22,10 @@
 
 Для автоматической установки пакета выполните команду в SSH-консоли вашего роутера:
 
-`sh -c "$(wget -qO- https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/install.sh)"`
-
+```bash
+sh -c "$(wget -qO- https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/install.sh)"
+```
 Скрипт автоматически определит архитектуру устройства, скачает актуальный `.apk` из последнего релиза GitHub и установит приложение в систему.
-
 
 ---
 
