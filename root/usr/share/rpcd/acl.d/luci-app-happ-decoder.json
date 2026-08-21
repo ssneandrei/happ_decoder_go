@@ -1,0 +1,11 @@
+{
+  "luci-app-happ-decoder": {
+    "description": "Grant access to Happ Decoder status and configuration",
+    "read": {
+      "uci": [ "happ-decoder" ]
+    },
+    "write": {
+      "uci": [ "happ-decoder" ]
+    }
+  }
+}
