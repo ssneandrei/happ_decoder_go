@@ -19,7 +19,9 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.22'
-
+    - name: Install dependencies
+    run: go mod tidy
+    
       - name: Build Binaries for OpenWrt
         run: |
           mkdir -p dist
