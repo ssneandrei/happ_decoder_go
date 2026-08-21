@@ -22,7 +22,7 @@ esac
 echo "[+] Определена архитектура: $PKG_ARCH"
 
 # 2. Получение ссылки на последний релиз с GitHub API
-DOWNLOAD_URL=$(wget -qO- https://api.github.com/repos/ssneandrel/happ_decoder_go/releases/latest | \
+DOWNLOAD_URL=$(wget -qO- https://api.github.com/repos/ssneandrei/happ_decoder_go/releases/latest | \
   grep "browser_download_url" | \
   grep "_${PKG_ARCH}\.apk" | \
   cut -d '"' -f 4)
