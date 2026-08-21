@@ -19,6 +19,8 @@ jobs:
 
       - name: Download Go modules
         run: |
+          go mod download
+          go get golang.org/x/crypto/chacha20poly1305
           go mod tidy
 
       - name: Build Go binaries
@@ -30,8 +32,8 @@ jobs:
       - name: Build APK Packages v3 via OpenWrt SDK
         uses: openwrt/gh-action-sdk@v1
         with:
-          archetype: aarch64_cortex-a53
-          tag: v25.12.0
+          target: x86/64
+          ver: openwrt-25.12
 
       - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v1
@@ -41,3 +43,4 @@ jobs:
             bin/packages/*/*/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
