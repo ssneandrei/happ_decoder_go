@@ -1,35 +1,42 @@
 name: Build and Release APK Package
+
 on:
-push:
-tags:
-- 'v*'
+  push:
+    tags:
+      - 'v*'
+
 jobs:
-build:
-runs-on: ubuntu-latest
-steps:
-- name: Checkout code
-uses: actions/checkout@v4
-- name: Set up Go
-uses: actions/setup-go@v5
-with:
-go-version: '1.22'
-- name: Download Go modules
-run: |
-go mod download
-go get golang.org/x/crypto/chacha20poly1305
-go mod tidy
-- name: Build Go binaries
-run: |
-GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o happ-decoder main.go
-- name: Build APK via OpenWrt SDK
-uses: openwrt/gh-action-sdk@v1
-with:
-arch: 'aarch64_cortex-a53'
-- name: Create Release and Upload Assets
-uses: softprops/action-gh-release@v1
-with:
-files: |
-happ-decoder
-bin/packages///*.apk
-env:
-GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Download Go modules
+        run: |
+          go mod download
+          go get golang.org/x/crypto/chacha20poly1305
+          go mod tidy
+
+      - name: Build Go binaries
+        run: |
+          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o happ-decoder main.go
+
+      - name: Build APK via OpenWrt SDK
+        uses: openwrt/gh-action-sdk@v1
+        with:
+          arch: 'aarch64_cortex-a53'
+
+      - name: Create Release and Upload Assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            happ-decoder
+            bin/packages/*/*/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
