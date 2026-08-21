@@ -7,30 +7,27 @@ jobs:
 build:
 runs-on: ubuntu-latest
 steps:
-- name: Checkout code
-uses: actions/checkout@v4
-- name: Set up Go
-uses: actions/setup-go@v5
+- uses: actions/checkout@v4
+- uses: actions/setup-go@v5
 with:
 go-version: '1.22'
-- name: Download Go modules
-run: go mod download && go get golang.org/x/crypto/chacha20poly1305 && go mod tidy
-- name: Build Go binary
+- name: Go Mod Tidy
+run: go mod tidy
+- name: Build Go Binary
 run: GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o happ-decoder main.go
-- name: Package APK v3
+- name: Pack APK v3
 run: |
-mkdir -p pkg_build/usr/bin pkg_build/etc/config pkg_build/etc/init.d pkg_build/usr/share/luci/menu.d pkg_build/usr/share/rpcd/acl.d pkg_build/www/luci-static/resources/view/happ-decoder output
-cp happ-decoder pkg_build/usr/bin/happ-decoder
-cp root/etc/config/happ-decoder pkg_build/etc/config/
-cp root/etc/init.d/happ-decoder pkg_build/etc/init.d/
-cp root/usr/share/luci/menu.d/.json pkg_build/usr/share/luci/menu.d/
-cp root/usr/share/rpcd/acl.d/.json pkg_build/usr/share/rpcd/acl.d/
-cp htdocs/luci-static/resources/view/happ-decoder/*.js pkg_build/www/luci-static/resources/view/happ-decoder/
-chmod +x pkg_build/usr/bin/happ-decoder pkg_build/etc/init.d/happ-decoder
-printf "pkgname = luci-app-happ-decoder\npkgver = 1.0.0-r1\npkgdesc = LuCI support for Happ Decoder\nurl = https://github.com/ssneandrei/happ_decoder_go\narch = aarch64\nsize = 5000000\ndepend = ca-bundle\n" > pkg_build/.PKGINFO
-tar -C pkg_build --owner=0 --group=0 -czf output/luci-app-happ-decoder_1.0.0_aarch64.apk .PKGINFO usr etc www
-- name: Create Release and Upload Assets
-uses: softprops/action-gh-release@v1
+mkdir -p pkg/usr/bin pkg/etc/config pkg/etc/init.d pkg/usr/share/luci/menu.d pkg/usr/share/rpcd/acl.d pkg/www/luci-static/resources/view/happ-decoder output
+cp happ-decoder pkg/usr/bin/
+[ -f root/etc/config/happ-decoder ] && cp root/etc/config/happ-decoder pkg/etc/config/ || true
+[ -f root/etc/init.d/happ-decoder ] && cp root/etc/init.d/happ-decoder pkg/etc/init.d/ || true
+cp root/usr/share/luci/menu.d/.json pkg/usr/share/luci/menu.d/ 2>/dev/null || true
+cp root/usr/share/rpcd/acl.d/.json pkg/usr/share/rpcd/acl.d/ 2>/dev/null || true
+cp htdocs/luci-static/resources/view/happ-decoder/.js pkg/www/luci-static/resources/view/happ-decoder/ 2>/dev/null || true
+chmod +x pkg/usr/bin/happ-decoder pkg/etc/init.d/ 2>/dev/null || true
+printf "pkgname = luci-app-happ-decoder\npkgver = 1.0.0-r1\npkgdesc = LuCI support for Happ Decoder\nurl = https://github.com/ssneandrei/happ_decoder_go\narch = aarch64\nsize = 5000000\ndepend = ca-bundle\n" > pkg/.PKGINFO
+tar -C pkg --owner=0 --group=0 -czf output/luci-app-happ-decoder_1.0.0_aarch64.apk .PKGINFO usr etc www
+- uses: softprops/action-gh-release@v1
 with:
 files: |
 happ-decoder
