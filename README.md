@@ -1,6 +1,6 @@
 # Happ Decoder Go (LuCI App for OpenWrt 25)
 
-Микросервис и веб-интерфейс LuCI для локальной расшифровки VPN-подписок формата `happ://` (поддерживаются форматы `crypt` — `crypt5`) на роутерах под управлением **OpenWrt 25** (с пакетным менеджером `apk`).
+Микросервис и веб-интерфейс LuCI для локальной расшифровки VPN-подписок формата **happ://** (поддерживаются форматы **crypt** — **crypt5**) на роутерах под управлением **OpenWrt 25** (с пакетным менеджером **apk**).
 
 Приложение полностью локально расшифровывает конфигурации (VLESS, VMess, Shadowsocks, Trojan) и отдаёт их в виде чистого списка для использования в **Forkop**, **Podkop**, **PassWall**, **OpenClash**.
 
@@ -22,6 +22,37 @@
 
 Для автоматической установки пакета выполните команду в SSH-консоли вашего роутера:
 
-```bash
-sh -c "$(wget -qO- https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/install.sh)"
+sh -c "$(wget -qO- [https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/install.sh](https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/install.sh))"
+
+Скрипт автоматически определит архитектуру устройства, скачает актуальный `.apk` из последнего релиза GitHub и установит приложение в систему.
+
+---
+
+## ⚙️ Настройка и использование
+
+1. Откройте веб-интерфейс OpenWrt и перейдите в раздел: **Службы** -> **Happ Decoder**.
+2. Включите службу и нажмите **Сохранить и применить**.
+
+### Использование в Forkop / Podkop / PassWall
+
+Вставьте исходную ссылку **happ://** в поле декодера в LuCI, чтобы сгенерировать подписку, либо сформируйте адрес вручную:
+
+[http://127.0.0.1:8080/sub?url=happ://ВАША_ИСХОДНАЯ_ССЫЛКА](http://127.0.0.1:8080/sub?url=happ://ВАША_ИСХОДНАЯ_ССЫЛКА)
+
+*(Если клиент запущен на другом устройстве в локальной сети, используйте IP-адрес роутера, например: [http://192.168.1.1:8080/sub?url=happ://](http://192.168.1.1:8080/sub?url=happ://)...)*
+
+---
+
+## 🗑️ Удаление
+
+Чтобы полностью удалить `luci-app-happ-decoder`, остановить службу и очистить все конфигурационные файлы с роутера, выполните команду в SSH:
+
+sh -c "$(wget -qO- [https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/uninstall.sh](https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/uninstall.sh))"
+
+---
+
+## 🛠️ Сборка
+
+Пакеты `.apk` собираются автоматически при создании нового тега релиза (`v*`) через GitHub Actions. Компиляция Go-бинарников выполняется без CGO (`CGO_ENABLED=0`) для архитектур `arm64`, `mipsle` и `amd64`.
+
 
