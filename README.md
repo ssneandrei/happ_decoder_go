@@ -23,7 +23,7 @@
 Для автоматической установки пакета выполните команду в SSH-консоли вашего роутера:
 
 ```bash
-sh -c "$(wget -qO- https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/install.sh)"
+sh -c "$(wget -qO- https://raw.githubusercontent.com/ssneandrei/happ_decoder_go/main/install.sh)"
 ```
 Скрипт автоматически определит архитектуру устройства, скачает актуальный `.apk` из последнего релиза GitHub и установит приложение в систему.
 
@@ -49,5 +49,5 @@ sh -c "$(wget -qO- https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/
 Чтобы полностью удалить `luci-app-happ-decoder`, остановить службу и очистить все конфигурационные файлы с роутера, выполните команду в SSH:
 
 ```bash
-sh -c "$(wget -qO- https://raw.githubusercontent.com/ssneandrel/happ_decoder_go/main/uninstall.sh)"
+sh -c "$(wget -qO- https://raw.githubusercontent.com/ssneandrei/happ_decoder_go/main/uninstall.sh)"
 ```
