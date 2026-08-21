@@ -17,6 +17,7 @@ jobs:
         run: GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o happ-decoder main.go
       - name: Pack APK v3
         run: |
+          sudo apt-get update && sudo apt-get install -y abuild
           mkdir -p pkg/usr/bin pkg/etc/config pkg/etc/init.d pkg/usr/share/luci/menu.d pkg/usr/share/rpcd/acl.d pkg/www/luci-static/resources/view/happ-decoder output
           cp happ-decoder pkg/usr/bin/
           [ -f root/etc/config/happ-decoder ] && cp root/etc/config/happ-decoder pkg/etc/config/ || true
@@ -26,7 +27,10 @@ jobs:
           cp htdocs/luci-static/resources/view/happ-decoder/.js pkg/www/luci-static/resources/view/happ-decoder/ 2>/dev/null || true
           chmod +x pkg/usr/bin/happ-decoder pkg/etc/init.d/ 2>/dev/null || true
           printf "pkgname = luci-app-happ-decoder\npkgver = 1.0.0-r1\npkgdesc = LuCI support for Happ Decoder\nurl = https://github.com/ssneandrei/happ_decoder_go\narch = aarch64\nsize = 5000000\ndepend = ca-bundle\n" > pkg/.PKGINFO
-          tar -C pkg --owner=0 --group=0 -cJf output/luci-app-happ-decoder_1.0.0_aarch64.apk .PKGINFO usr etc www
+          cd pkg
+          tar -c .PKGINFO | abuild-tar --cut | gzip -9 > control.tar.gz
+          tar -c usr etc www | abuild-tar --cut | xz -9 > data.tar.xz
+          cat control.tar.gz data.tar.xz > ../output/luci-app-happ-decoder_1.0.0_aarch64.apk
       - uses: softprops/action-gh-release@v1
         with:
           files: |
