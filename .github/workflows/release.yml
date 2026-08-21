@@ -17,6 +17,10 @@ jobs:
         with:
           go-version: '1.22'
 
+      - name: Download Go modules
+        run: |
+          go mod tidy
+
       - name: Build Go binaries
         run: |
           GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o happ-decoder_aarch64 main.go
