@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-happ-decoder
-PKG_VERSION:=1.0.0
+PKG_VERSION:=1.0.5
 PKG_RELEASE:=1
 
 include $(INCLUDE_DIR)/package.mk
@@ -11,7 +11,7 @@ define Package/luci-app-happ-decoder
   CATEGORY:=LuCI
   SUBMENU:=3. Applications
   TITLE:=LuCI support for Happ Decoder
-  DEPENDS:=+happ-decoder
+  DEPENDS:=+ca-bundle
   PKGARCH:=all
 endef
 
@@ -19,6 +19,9 @@ define Build/Compile
 endef
 
 define Package/luci-app-happ-decoder/install
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) ./happ-decoder $(1)/usr/bin/happ-decoder
+
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DATA) ./root/etc/config/happ-decoder $(1)/etc/config/happ-decoder
 
