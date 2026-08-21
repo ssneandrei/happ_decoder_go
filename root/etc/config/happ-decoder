@@ -1,0 +1,3 @@
+config global 'main'
+    option enabled '1'
+    option port '8080'
