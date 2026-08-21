@@ -1,0 +1,12 @@
+{
+  "admin/services/happ-decoder": {
+    "title": "Happ Decoder",
+    "action": {
+      "type": "view",
+      "path": "happ-decoder/overview"
+    },
+    "depends": {
+      "acl": [ "luci-app-happ-decoder" ]
+    }
+  }
+}
