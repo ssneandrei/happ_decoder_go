@@ -1,66 +1,35 @@
 name: Build and Release APK Package
-
 on:
-  push:
-    tags:
-      - 'v*'
-
+push:
+tags:
+- 'v*'
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.22'
-
-      - name: Download Go modules
-        run: |
-          go mod download
-          go get golang.org/x/crypto/chacha20poly1305
-          go mod tidy
-
-      - name: Build Go binaries
-        run: |
-          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o happ-decoder_aarch64 main.go
-          GOOS=linux GOARCH=mipsle CGO_ENABLED=0 go build -ldflags="-s -w" -o happ-decoder_mips main.go
-          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o happ-decoder_x86_64 main.go
-
-      - name: Install Alpine APK tools (v3)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y apk-tools
-
-      - name: Package APK v3
-        run: |
-          mkdir -p pkg_root/usr/bin
-          mkdir -p pkg_root/etc/config
-          mkdir -p pkg_root/etc/init.d
-          mkdir -p pkg_root/usr/share/luci/menu.d
-          mkdir -p pkg_root/usr/share/rpcd/acl.d
-          mkdir -p pkg_root/www/luci-static/resources/view/happ-decoder
-
-          cp root/etc/config/happ-decoder pkg_root/etc/config/
-          cp root/etc/init.d/happ-decoder pkg_root/etc/init.d/
-          cp root/usr/share/luci/menu.d/*.json pkg_root/usr/share/luci/menu.d/
-          cp root/usr/share/rpcd/acl.d/*.json pkg_root/usr/share/rpcd/acl.d/
-          cp htdocs/luci-static/resources/view/happ-decoder/*.js pkg_root/www/luci-static/resources/view/happ-decoder/
-
-          mkdir -p output
-          
-          # Сборка пакета для aarch64
-          cp happ-decoder_aarch64 pkg_root/usr/bin/happ-decoder
-          chmod +x pkg_root/usr/bin/happ-decoder pkg_root/etc/init.d/happ-decoder
-          tar -C pkg_root -czf output/luci-app-happ-decoder_1.0.8_aarch64.apk .
-
-      - name: Create Release and Upload Assets
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            happ-decoder_*
-            output/*.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+build:
+runs-on: ubuntu-latest
+steps:
+- name: Checkout code
+uses: actions/checkout@v4
+- name: Set up Go
+uses: actions/setup-go@v5
+with:
+go-version: '1.22'
+- name: Download Go modules
+run: |
+go mod download
+go get golang.org/x/crypto/chacha20poly1305
+go mod tidy
+- name: Build Go binaries
+run: |
+GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o happ-decoder main.go
+- name: Build APK via OpenWrt SDK
+uses: openwrt/gh-action-sdk@v1
+with:
+arch: 'aarch64_cortex-a53'
+- name: Create Release and Upload Assets
+uses: softprops/action-gh-release@v1
+with:
+files: |
+happ-decoder
+bin/packages///*.apk
+env:
+GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
