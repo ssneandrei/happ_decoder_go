@@ -23,20 +23,23 @@ jobs:
           go get golang.org/x/crypto/chacha20poly1305
           go mod tidy
 
-      - name: Build Go binaries
+      - name: Build Go binary
         run: |
           GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o happ-decoder main.go
 
-      - name: Build APK via OpenWrt SDK
-        uses: openwrt/gh-action-sdk@v1
-        with:
-          arch: 'aarch64_cortex-a53'
+      - name: Build APK v3 Package in OpenWrt Docker
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/builder/package/happ-decoder \
+            openwrt/sdk:aarch64_cortex-a53-openwrt-25.12 \
+            make package/happ-decoder/compile V=s
 
       - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v1
         with:
           files: |
             happ-decoder
-            bin/packages/*/*/*.apk
+            bin/packages/aarch64_cortex-a53/base/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
